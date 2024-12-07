@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const sun = {
+            x: canvas.width/2,
+            y: canvas.height/2,
+            mass: 100
+        }
+
+        const body = {
+            x: Math.random()*canvas.width,
+            y: Math.random()*canvas.height,
+            mass: 2,
+            vectorX: Math.random()*5,
+            vectorY: Math.random()*5
+        }
+
+
+
+        function gameLoop() {
+
+            move();
+            draw();
+            //gameLoop();
+        }
+
+
+        function move() {
+            body.x = body.x + body.vectorX;
+            body.y = body.y + body.vectorY;
+        }
+
+        function draw() {
+        ctx.fillStyle = "white";
+        ctx.fillRect( 0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "green";
+
+        ctx.beginPath();
+        ctx.arc(sun.x, sun.y, 50, 0, Math.PI * 2, true); // sun
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(body.x, body.y, 10, 0, Math.PI * 2, true); // body
+        ctx.stroke();
+
+        ctx.moveTo(body.x, body.y);
+        ctx.lineTo(body.x + body.vectorX, body.y + body.vectorY);
+        ctx.stroke();
+
+        ctx.font = "48px serif";
+        ctx.fillText(`body x: ${body.x}`, 10, 50);
+        ctx.fillText(`body y: ${body.y}`, 10, 100);
+        ctx.fillText(`body x: ${body.vectorX}`, 10, 150);
+        ctx.fillText(`body y: ${body.vectorY}`, 10, 200);
+    }
+        //ctx.beginPath();
+        //ctx.arc(95, 50, 40, 0, 2 * Math.PI);
+        //ctx.stroke();
+
+
+        setInterval(gameLoop, 16);
+    </script>
+</body>
+</html>
