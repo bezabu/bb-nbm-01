@@ -24,8 +24,8 @@
             x: Math.random()*canvas.width,
             y: Math.random()*canvas.height,
             mass: 2,
-            vectorX: Math.random()*5,
-            vectorY: Math.random()*5
+            vectorX: Math.random()*2,
+            vectorY: Math.random()*2
         }
 
 
@@ -37,8 +37,29 @@
             //gameLoop();
         }
 
+        function getDistance(x1,y1,x2,y2) {
+            //(Math.pow((x2-x1),2))+(Math.pow((y2-y1),2))
+            d=Math.abs(Math.sqrt((Math.pow((x2-x1),2))+(Math.pow((y2-y1),2))));
+            return d;
+        }
+
+        function calculatePull(a,b) {
+            //a is the body
+            //calculate vector
+            d=getDistance(a.x,a.y,b.x,b.y);
+            //G = 2.2 * 10^-5;
+            G = 9.81;
+            f = G * ((a.mass * b.mass)/d);
+            return f;
+        }
+
+        function getDirection(a,b)
 
         function move() {
+            
+            f = calculatePull(body,sun);
+
+            //move
             body.x = body.x + body.vectorX;
             body.y = body.y + body.vectorY;
         }
@@ -63,8 +84,11 @@
         ctx.font = "48px serif";
         ctx.fillText(`body x: ${body.x}`, 10, 50);
         ctx.fillText(`body y: ${body.y}`, 10, 100);
-        ctx.fillText(`body x: ${body.vectorX}`, 10, 150);
-        ctx.fillText(`body y: ${body.vectorY}`, 10, 200);
+        ctx.fillText(`body vector x: ${body.vectorX}`, 10, 150);
+        ctx.fillText(`body vector y: ${body.vectorY}`, 10, 200);
+        ctx.fillText(`force: ${f}`, 10, 250);
+        dis = getDistance(body.x,body.y,sun.x,sun.y);
+        ctx.fillText(`distance: ${dis}`, 10, 300);
     }
         //ctx.beginPath();
         //ctx.arc(95, 50, 40, 0, 2 * Math.PI);
