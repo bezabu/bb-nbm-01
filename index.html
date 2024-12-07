@@ -54,13 +54,35 @@
         }
 
         function getDirection(a,b) {
-            
+            // angle in degrees
+            angleDeg = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+            return angleDeg;
         }
 
         function move() {
             
             f = calculatePull(body,sun);
+            d = getDirection(body,sun);
 
+            //use 90 - angle to determine ratio of x to y
+
+            if (d >=0 && d<=90) {
+                //bottom right
+                xa = 1;
+                ya = 1;
+            } else if (d>90 && d<=180) {
+                //bottom left
+                xa = -1;
+                ya = 1;
+            } else if (d<0 && d>= -90) {
+                //top right
+                xa = 1;
+                ya = -1;
+            } else if (d<-90 && d> -180) {
+                //top left
+                xa = -1;
+                ya = -1;
+            }
             //move
             body.x = body.x + body.vectorX;
             body.y = body.y + body.vectorY;
@@ -80,7 +102,7 @@
         ctx.stroke();
 
         ctx.moveTo(body.x, body.y);
-        ctx.lineTo(body.x + body.vectorX, body.y + body.vectorY);
+        ctx.lineTo(body.x + (body.vectorX*10), body.y + (body.vectorY*10));
         ctx.stroke();
 
         ctx.font = "48px serif";
@@ -88,9 +110,12 @@
         ctx.fillText(`body y: ${body.y}`, 10, 100);
         ctx.fillText(`body vector x: ${body.vectorX}`, 10, 150);
         ctx.fillText(`body vector y: ${body.vectorY}`, 10, 200);
+        f = calculatePull(body,sun);
         ctx.fillText(`force: ${f}`, 10, 250);
         dis = getDistance(body.x,body.y,sun.x,sun.y);
         ctx.fillText(`distance: ${dis}`, 10, 300);
+        dir = getDirection(body,sun);
+        ctx.fillText(`direction: ${dir}`, 10, 350);
     }
         //ctx.beginPath();
         //ctx.arc(95, 50, 40, 0, 2 * Math.PI);
