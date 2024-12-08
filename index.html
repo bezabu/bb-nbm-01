@@ -24,8 +24,8 @@
             x: Math.random()*canvas.width,
             y: Math.random()*canvas.height,
             mass: 2,
-            vectorX: Math.random()*2,
-            vectorY: Math.random()*2
+            vectorX: (Math.random()*4)-2,
+            vectorY: (Math.random()*4)-2
         }
 
 
@@ -53,18 +53,32 @@
             return f;
         }
 
-        function getDirection(a,b) {
+        function getDirection(ax,ay,bx,by) {
             // angle in degrees
-            angleDeg = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+            angleDeg = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
             return angleDeg;
+        }
+
+        function getXComponent(f,d) {
+            return Math.sqrt(f*Math.cos(d));
         }
 
         function move() {
             
             f = calculatePull(body,sun);
-            d = getDirection(body,sun);
-
+            d = getDirection(body.x,body.y,sun.x,sun.y);
+            selfD = getDirection(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
+            selfV = getDistance(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
             //use 90 - angle to determine ratio of x to y
+
+            xv = getXComponent(selfV,selfD);
+
+            if (selfD>=0) {
+                selfDown=1;
+                //
+                xv = Math.cos(selfD)/selfV;
+            } else selfDown=0;
+
 
             if (d >=0 && d<=90) {
                 //bottom right
@@ -114,8 +128,17 @@
         ctx.fillText(`force: ${f}`, 10, 250);
         dis = getDistance(body.x,body.y,sun.x,sun.y);
         ctx.fillText(`distance: ${dis}`, 10, 300);
-        dir = getDirection(body,sun);
-        ctx.fillText(`direction: ${dir}`, 10, 350);
+        dir = getDirection(body.x,body.y,sun.x,sun.y);
+        ctx.fillText(`direction to sun: ${dir}`, 10, 350);
+        selfD = getDirection(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
+        ctx.fillText(`body direction: ${selfD}`, 10, 400);
+        selfV = getDistance(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
+        ctx.fillText(`body vector magnitude: ${selfV}`, 10, 450);
+        if (selfD>=0) {
+                down=1;
+                xv = Math.cos(selfD)*selfV;
+            } else down=0;
+        ctx.fillText(`xv: ${xv}`, 10, 500);
     }
         //ctx.beginPath();
         //ctx.arc(95, 50, 40, 0, 2 * Math.PI);
