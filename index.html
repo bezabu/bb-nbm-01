@@ -56,15 +56,18 @@
             return f;
         }
 
-        function getDirection(ax,ay,bx,by) {
+        function getDirectionDeg(ax,ay,bx,by) {
             // angle in degrees
             angleDeg = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
             return angleDeg+180;
         }
 
-        function getXComponent(f,d) {
-            return Math.sqrt(f*Math.cos(d));
+        function getDirectionRad(ax,ay,bx,by) {
+            // angle in radians
+            angleRad = Math.atan2(by - ay, bx - ax)
+            return angleRad;
         }
+
 
         function lengthDirX(f,d) {
             angleRad = d*Math.PI/180;
@@ -75,11 +78,21 @@
             angleRad = d*Math.PI/180;
             return f * -Math.sin(angleRad);
         }
+
+        function lengthDirXRad(f,d) {
+
+            return f * Math.cos(d);
+        }
+
+        function lengthDirYRad(f,d) {
+
+            return f * -Math.sin(d);
+        }
         function move() {
             
             f = calculatePull(body,sun);
-            d = getDirection(body.x,body.y,sun.x,sun.y);
-            selfD = getDirection(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
+            d = getDirectionDeg(body.x,body.y,sun.x,sun.y);
+            selfD = getDirectionDeg(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
             selfV = getDistance(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
             //use 90 - angle to determine ratio of x to y
 
@@ -101,24 +114,29 @@
 
 
             if (d >=0 && d<=90) {
-                //bottom right
+                //bottom left
                 xa = 1;
                 ya = 1;
                 
             } else if (d>90 && d<=180) {
-                //bottom left
-                xa = -1;
+                //bottom right
+                xa = 1;
                 ya = 1;
-            } else if (d<0 && d>= -90) {
+
+            } else if (d>180 && d<= 270) {
                 //top right
                 xa = 1;
-                ya = -1;
+                ya = 1;
                 
-            } else if (d<-90 && d> -180) {
+            } else if (d>270 && d<= 360) {
                 //top left
-                xa = -1;
-                ya = -1;
+                xa = 1;
+                ya = 1;
             }
+
+            vx = vx*xa;
+            vy = vy*ya;
+
             body.wasVX = body.vectorX;
             body.wasVY = body.vectorY;
             body.vectorX += vx;
@@ -131,7 +149,7 @@
         function draw() {
 
             f = calculatePull(body,sun);
-            d = getDirection(body.x,body.y,sun.x,sun.y);
+            d = getDirectionDeg(body.x,body.y,sun.x,sun.y);
             vx = lengthDirX(f,d);
             vy = lengthDirY(f,d);
 
@@ -139,6 +157,7 @@
         ctx.fillRect( 0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "green";
 
+        ctx.strokeStyle = "#000000";
         ctx.beginPath();
         ctx.arc(sun.x, sun.y, 50, 0, Math.PI * 2, true); // sun
         ctx.stroke();
@@ -148,11 +167,12 @@
         ctx.stroke();
 
         ctx.moveTo(body.x, body.y);
-        ctx.lineTo(body.x + (body.vectorX), body.y + (body.vectorY));
+        ctx.lineTo(body.x + (body.vectorX)*10, body.y + (body.vectorY*10));
         ctx.stroke();
 
+        ctx.strokeStyle = "red";
         ctx.moveTo(body.x, body.y);
-        ctx.lineTo(body.x + lengthDirX(d,d), body.y + lengthDirY(f,d));
+        ctx.lineTo(body.x + lengthDirX(f*1000,d), body.y + lengthDirY(f*1000,d));
         ctx.stroke();
 
         ctx.font = "48px serif";
@@ -164,14 +184,13 @@
         ctx.fillText(`force: ${f}`, 10, 250);
         dis = getDistance(body.x,body.y,sun.x,sun.y);
         ctx.fillText(`distance: ${dis}`, 10, 300);
-        dir = getDirection(body.x,body.y,sun.x,sun.y);
+        dir = getDirectionDeg(body.x,body.y,sun.x,sun.y);
         ctx.fillText(`direction to sun: ${dir}`, 10, 350);
-        selfD = getDirection(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
+        selfD = getDirectionDeg(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
         ctx.fillText(`body direction: ${selfD}`, 10, 400);
         selfV = getDistance(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
         ctx.fillText(`body vector magnitude: ${selfV}`, 10, 450);       
-        vx = lengthDirX(f,dir);
-        vy = lengthDirY(f,dir);
+
         ctx.fillText(`vx: ${vx}`, 10, 500);
         ctx.fillText(`vy: ${vy}`, 10, 550);
     }
