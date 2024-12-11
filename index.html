@@ -19,23 +19,145 @@
             y: canvas.height/2,
             mass: 100000
         }
+        const bodies = 6;
+        let bodyList = [];
 
+        //function Body(mass) {
+
+        //}
+
+
+        class Body {
+            constructor(name, x, y, mass, direction, velocity) {
+                this.name = name;
+                this.x = x;
+                this.y = y;
+                this.mass = mass;
+                this.direction = direction;
+                this.velocity = velocity;
+            /*
+            this.name = 'Body';
+            this.x = Math.round(Math.random()*canvas.width);
+            this.y = Math.round(Math.random()*canvas.height);
+            this.mass = mass;
+            this.direction = Math.random()*360;
+            this.velocity - Math.random()*15;
+            */
+            this.vx = lengthDirX(this.velocity,this.direction);
+            this.vy = lengthDirY(this.velocity,this.direction);
+            //this.ctx = ctx;
+            return this;
+            }
+            //ctx = ctx;
+            
+            move() {
+                //cycle through all other bodies here
+                //for (i=0; i<bodies; i++) {
+                    //do nothing
+                //}
+                //console.log(`${this.name}`);
+                bodyList.map((i) => {
+                    //do nothing
+                    //console.log(`${this.name} vs ${i.name}`)
+                    if (i != this) {
+                        //do nothing
+                        //console.log(`${i.name}`)
+                        //f = calculatePull(this,i);
+                        f = calculatePull2(this.x, this.y ,i.x , i.y, this.mass, i.mass);
+                        d = getDirectionDeg(this.x,this.y,i.x,i.y);
+                        this.vx += lengthDirX(f,d);
+                        this.vy += lengthDirY(f,d);
+                    }
+                })
+/*
+                
+                for (i=0; i<bodies; i++) {
+                    //
+                    if (bodyList[i] != this){
+                        console.log(`I am ${this}, ${i} is not me!`);
+                        let f = calculatePull(this,bodyList[i]);
+                        //console.log(f);
+                        let d = getDirectionDeg(this.x,this.y,bodyList[i].x,bodyList[i].y);
+                        //console.log(d);
+            
+                        this.vx += lengthDirX(f,d);
+                        this.vy += lengthDirY(f,d);
+                        //console.log(`vx: ${this.vx}, vy: ${this.vy}`)
+                    }
+                }
+                */
+                //f = calculatePull(this,sun);
+                //d = getDirectionDeg(this.x,this.y,sun.x,sun.y);
+            
+                //this.vx += lengthDirX(f,d);
+                //this.vy += lengthDirY(f,d);
+
+                this.x += this.vx;
+                this.y += this.vy;
+                //console.log(`Body with mass: ${this.mass} moved to x: ${this.vx}, y: ${this.vy}`)
+                //console.log(this.x);
+            }
+
+            draw() {
+
+                
+
+                ctx.strokeStyle = "#000000";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.mass/20, 0, Math.PI * 2, true); // body
+                ctx.stroke();
+
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + (this.vx), this.y + (this.vy)); // course
+                ctx.stroke();
+
+                ctx.font = "48px serif";
+                ctx.fillText(`mass: ${this.mass}`, this.x + 25, this.y + 25);
+                ctx.fillText(`name: ${this.name}`, this.x + 25, this.y + 75);
+                //console.log(`Draw body with mass ${this.mass} at x: ${this.x}, y: ${this.y}`)
+                //console.log(this.name);
+                //ctx.fillRect(10, 10, 10 + this.mass, 10 + this.mass);
+            }
+        }
+
+        //const body = new Body();
+
+        
+        /*
         const body = {
             x: Math.random()*canvas.width,
             y: Math.random()*canvas.height,
             mass: 15,
             direction: Math.random()*360,
-            velocity: Math.random()*10,
+            velocity: Math.random()*15,
             vx: lengthDirX(2,0),
             vy: lengthDirY(2,0)
         }
+*/
+
+
+        for (i=0; i<bodies; i++) {
+            //bodyList[i] = new Body((Math.random()*100)+20);
+            bodyList[i] = new Body("Body " + i, Math.round(Math.random()*(canvas.width/2)+(canvas.width/4)), Math.round(Math.random()*(canvas.height/2)+(canvas.height/4)), (Math.random()*1000), Math.random()*360, Math.random()*5);
+        }
+        
 
 
 
         function gameLoop() {
 
-            move();
-            draw();
+            //move(body);
+            for (i=0; i<bodies; i++) {
+                bodyList[i].move();
+
+            }
+            drawSun();
+            ctx.strokeStyle = "#000000";
+            for (i=0; i<bodies; i++) {
+                bodyList[i].draw();
+
+            }
+            //console.log("GameLoop run")
             //gameLoop();
         }
 
@@ -53,6 +175,17 @@
             G = 0.000022;
             //G = 9.81;
             f = G * ((a.mass * b.mass)/d);
+            return f;
+        }
+
+        function calculatePull2(ax, ay ,bx , by, am, bm) {
+            //a is the body
+            //calculate vector
+            d=getDistance(ax,ay,bx,by);
+            //G = 2.2 * 10^-5;
+            G = 0.000022;
+            //G = 9.81;
+            f = G * ((am * bm)/d);
             return f;
         }
 
@@ -88,65 +221,11 @@
 
             return f * -Math.sin(d);
         }
-        function move() {
-            //body.vx=0;
-            //body.vy=0;
-
-            f = calculatePull(body,sun);
-            d = getDirectionDeg(body.x,body.y,sun.x,sun.y);
-            
-            body.vx += lengthDirX(f,d);
-            body.vy += lengthDirY(f,d);
-            //use 90 - angle to determine ratio of x to y
-            
-            
-            
-            
-/*
-            if (selfD>=0) {
-                selfDown=1;
-                //
-                vx = lengthDirX(f,d);
-                vy = lengthDirY(f,d);
-            } else {
-                selfDown=0;
-                vx = lengthDirX(f,d);
-                vy = lengthDirY(f,d);
-            }
+        
 
 
-            if (d >=0 && d<=90) {
-                //bottom left
-                xa = 1;
-                ya = 1;
-                
-            } else if (d>90 && d<=180) {
-                //bottom right
-                xa = 1;
-                ya = 1;
+        function drawSun(BodyList) {
 
-            } else if (d>180 && d<= 270) {
-                //top right
-                xa = 1;
-                ya = 1;
-                
-            } else if (d>270 && d<= 360) {
-                //top left
-                xa = 1;
-                ya = 1;
-            }
-
-            vx = vx*xa;
-            vy = vy*ya;
-*/
-            body.x = body.x + body.vx;
-            body.y = body.y + body.vy;
-        }
-
-        function draw() {
-
-            f = calculatePull(body,sun);
-            d = getDirectionDeg(body.x,body.y,sun.x,sun.y);
             
 
         ctx.fillStyle = "white";
@@ -154,27 +233,14 @@
         ctx.fillStyle = "green";
 
         ctx.strokeStyle = "#000000";
-        ctx.beginPath();
-        ctx.arc(sun.x, sun.y, 50, 0, Math.PI * 2, true); // sun
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(body.x, body.y, 10, 0, Math.PI * 2, true); // body
-        ctx.stroke();
-
-        ctx.moveTo(body.x, body.y);
-        ctx.lineTo(body.x + (body.vx), body.y + (body.vy));
-        ctx.stroke();
-
-/*
-        ctx.strokeStyle = "red";
-        ctx.moveTo(body.x, body.y);
-        ctx.lineTo(body.x + lengthDirX(f*1000,d), body.y + lengthDirY(f*1000,d));
-        ctx.stroke();
-        */
+        //ctx.beginPath();
+        //ctx.arc(sun.x, sun.y, 50, 0, Math.PI * 2, true); // sun
+        //ctx.stroke();
 
         ctx.font = "48px serif";
-        ctx.fillText(`body x: ${body.x}`, 10, 50);
+        ctx.fillText(`bodies: ${bodyList.length}`, 10, 50);
+        ctx.fillText(`body 0 mass: ${bodyList[0].mass}`, 10, 100);
+        /*
         ctx.fillText(`body y: ${body.y}`, 10, 100);
         ctx.fillText(`body vector x: ${body.vx}`, 10, 150);
         ctx.fillText(`body vector y: ${body.vy}`, 10, 200);
@@ -184,7 +250,7 @@
         ctx.fillText(`distance: ${dis}`, 10, 300);
         dir = getDirectionDeg(body.x,body.y,sun.x,sun.y);
         ctx.fillText(`direction to sun: ${dir}`, 10, 350);
-        
+        */
     }
         //ctx.beginPath();
         //ctx.arc(95, 50, 40, 0, 2 * Math.PI);
