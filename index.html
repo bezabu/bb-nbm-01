@@ -14,6 +14,8 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        let xOffset = 0;
+        let yOffset = 0;
         const sun = {
             x: canvas.width/2,
             y: canvas.height/2,
@@ -104,16 +106,16 @@
 
                 ctx.strokeStyle = "#000000";
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.mass/20, 0, Math.PI * 2, true); // body
+                ctx.arc(this.x + xOffset, this.y + yOffset, this.mass/20, 0, Math.PI * 2, true); // body
                 ctx.stroke();
 
-                ctx.moveTo(this.x, this.y);
-                ctx.lineTo(this.x + (this.vx), this.y + (this.vy)); // course
+                ctx.moveTo(this.x + xOffset, this.y + yOffset);
+                ctx.lineTo(this.x + (this.vx) + xOffset, this.y + (this.vy) + yOffset); // course
                 ctx.stroke();
 
                 ctx.font = "48px serif";
-                ctx.fillText(`mass: ${this.mass}`, this.x + 25, this.y + 25);
-                ctx.fillText(`name: ${this.name}`, this.x + 25, this.y + 75);
+                ctx.fillText(`mass: ${this.mass}`, this.x + 25 + xOffset, this.y + 25 + yOffset);
+                ctx.fillText(`name: ${this.name}`, this.x + 25 + xOffset, this.y + 75 + yOffset);
                 //console.log(`Draw body with mass ${this.mass} at x: ${this.x}, y: ${this.y}`)
                 //console.log(this.name);
                 //ctx.fillRect(10, 10, 10 + this.mass, 10 + this.mass);
