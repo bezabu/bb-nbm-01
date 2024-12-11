@@ -24,10 +24,10 @@
             x: Math.random()*canvas.width,
             y: Math.random()*canvas.height,
             mass: 15,
-            vectorX: (Math.random()*4)-2,
-            vectorY: (Math.random()*4)-2,
-            wasVX: 0,
-            wasVY: 0
+            direction: Math.random()*360,
+            velocity: Math.random()*10,
+            vx: lengthDirX(2,0),
+            vy: lengthDirY(2,0)
         }
 
 
@@ -59,7 +59,7 @@
         function getDirectionDeg(ax,ay,bx,by) {
             // angle in degrees
             angleDeg = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
-            return angleDeg+180;
+            return angleDeg*-1;
         }
 
         function getDirectionRad(ax,ay,bx,by) {
@@ -89,18 +89,20 @@
             return f * -Math.sin(d);
         }
         function move() {
-            
+            //body.vx=0;
+            //body.vy=0;
+
             f = calculatePull(body,sun);
             d = getDirectionDeg(body.x,body.y,sun.x,sun.y);
-            selfD = getDirectionDeg(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
-            selfV = getDistance(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
+            
+            body.vx += lengthDirX(f,d);
+            body.vy += lengthDirY(f,d);
             //use 90 - angle to determine ratio of x to y
-
-            vx=0;
-            vy=0;
             
             
-
+            
+            
+/*
             if (selfD>=0) {
                 selfDown=1;
                 //
@@ -136,22 +138,16 @@
 
             vx = vx*xa;
             vy = vy*ya;
-
-            body.wasVX = body.vectorX;
-            body.wasVY = body.vectorY;
-            body.vectorX += vx;
-            body.vectorY += vy;
-            //move
-            body.x = body.x + body.vectorX;
-            body.y = body.y + body.vectorY;
+*/
+            body.x = body.x + body.vx;
+            body.y = body.y + body.vy;
         }
 
         function draw() {
 
             f = calculatePull(body,sun);
             d = getDirectionDeg(body.x,body.y,sun.x,sun.y);
-            vx = lengthDirX(f,d);
-            vy = lengthDirY(f,d);
+            
 
         ctx.fillStyle = "white";
         ctx.fillRect( 0, 0, canvas.width, canvas.height);
@@ -167,32 +163,28 @@
         ctx.stroke();
 
         ctx.moveTo(body.x, body.y);
-        ctx.lineTo(body.x + (body.vectorX)*10, body.y + (body.vectorY*10));
+        ctx.lineTo(body.x + (body.vx), body.y + (body.vy));
         ctx.stroke();
 
+/*
         ctx.strokeStyle = "red";
         ctx.moveTo(body.x, body.y);
         ctx.lineTo(body.x + lengthDirX(f*1000,d), body.y + lengthDirY(f*1000,d));
         ctx.stroke();
+        */
 
         ctx.font = "48px serif";
         ctx.fillText(`body x: ${body.x}`, 10, 50);
         ctx.fillText(`body y: ${body.y}`, 10, 100);
-        ctx.fillText(`body vector x: ${body.vectorX}`, 10, 150);
-        ctx.fillText(`body vector y: ${body.vectorY}`, 10, 200);
+        ctx.fillText(`body vector x: ${body.vx}`, 10, 150);
+        ctx.fillText(`body vector y: ${body.vy}`, 10, 200);
         f = calculatePull(body,sun);
         ctx.fillText(`force: ${f}`, 10, 250);
         dis = getDistance(body.x,body.y,sun.x,sun.y);
         ctx.fillText(`distance: ${dis}`, 10, 300);
         dir = getDirectionDeg(body.x,body.y,sun.x,sun.y);
         ctx.fillText(`direction to sun: ${dir}`, 10, 350);
-        selfD = getDirectionDeg(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
-        ctx.fillText(`body direction: ${selfD}`, 10, 400);
-        selfV = getDistance(body.x,body.y,body.x+body.vectorX,body.y+body.vectorY);
-        ctx.fillText(`body vector magnitude: ${selfV}`, 10, 450);       
-
-        ctx.fillText(`vx: ${vx}`, 10, 500);
-        ctx.fillText(`vy: ${vy}`, 10, 550);
+        
     }
         //ctx.beginPath();
         //ctx.arc(95, 50, 40, 0, 2 * Math.PI);
