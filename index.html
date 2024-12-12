@@ -25,7 +25,11 @@
         var activeBodies = 7;
         let bodyList = [];
         let density = 20;
-
+        let leftKey = 0;
+        let rightKey = 0;
+        let upKey = 0;
+        let downKey = 0;
+        let cameraMoveAmount = 4;
         //function Body(mass) {
 
         //}
@@ -211,7 +215,20 @@
         }
         }
 
-       
+       function camera() {
+        if (upKey) {
+            yOffset += cameraMoveAmount;
+        }
+        if (downKey) {
+            yOffset -= cameraMoveAmount;
+        }
+        if (leftKey) {
+            xOffset += cameraMoveAmount;
+        }
+        if (rightKey) {
+            xOffset -= cameraMoveAmount;
+        }
+       }
 
         function populateBodies(number) {
             for (i=0; i<number; i++) {
@@ -257,6 +274,8 @@
 
 
         function gameLoop() {
+
+            camera();
 
             //move(body);
             for (i=0; i<bodies; i++) {
@@ -363,7 +382,8 @@
 
             
 
-        ctx.fillStyle = "white";
+        //ctx.fillStyle = "white";
+        ctx.fillStyle = "black";
         ctx.fillRect( 0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "green";
 
@@ -374,12 +394,33 @@
 
         ctx.font = "48px serif";
         ctx.fillText(`bodies: ${bodyList.length} (active: ${activeBodies})`, 10, 50);
+        ctx.fillText(`camera offset: x: ${xOffset} y: ${yOffset})`, 10, 100);
 
        
     }
        
     populateBodies(bodies);
         setInterval(gameLoop, 16);
+
+
+
+        //event listeners
+//key downs
+document.addEventListener('keydown', (event) => {
+    if (event.key == "ArrowLeft") leftKey = 1;
+    if (event.key == "ArrowRight") rightKey = 1;
+    if (event.key == "ArrowUp") upKey = 1;
+    if (event.key == "ArrowDown") downKey = 1;
+
+});
+document.addEventListener('keyup', (event) => {
+    //key up
+    if (event.key == "ArrowLeft") leftKey = 0;
+    if (event.key == "ArrowRight") rightKey = 0;
+    if (event.key == "ArrowUp") upKey = 0;
+    if (event.key == "ArrowDown") downKey = 0;
+    
+});
     </script>
 </body>
 </html>
