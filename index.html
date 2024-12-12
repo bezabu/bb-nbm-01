@@ -21,7 +21,7 @@
             y: canvas.height/2,
             mass: 100000
         }
-        const bodies = 6;
+        const bodies = 2;
         let bodyList = [];
 
         //function Body(mass) {
@@ -52,6 +52,20 @@
             }
             //ctx = ctx;
             
+            collisionCheck() {
+                bodyList.map((i) => {
+                    //do nothing
+                    //console.log(`${this.name} vs ${i.name}`)
+                    if (i != this) {
+                        if (getDistance(this.x, this.y, i.x, i.y) < (this.mass/20) + (i.mass/20)) {
+                            //collision
+                            console.log(`Collision! ${this.name} and ${i.name}`);
+                        }
+                        
+                    }
+                })
+            }
+
             move() {
                 //cycle through all other bodies here
                 //for (i=0; i<bodies; i++) {
@@ -151,7 +165,7 @@
             //move(body);
             for (i=0; i<bodies; i++) {
                 bodyList[i].move();
-
+                bodyList[i].collisionCheck();
             }
             drawSun();
             ctx.strokeStyle = "#000000";
