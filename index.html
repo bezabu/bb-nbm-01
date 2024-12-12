@@ -13,7 +13,8 @@
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
+        let preXOffset = 0;
+        let preYOffset = 0;
         let xOffset = 0;
         let yOffset = 0;
         const sun = {
@@ -29,7 +30,11 @@
         let rightKey = 0;
         let upKey = 0;
         let downKey = 0;
+        let zoomInKey = 0;
+        let zoomOutKey = 0;
         let cameraMoveAmount = 4;
+        let cameraZoom = 1;
+        let cameraZoomAmount = 0.1;
         //function Body(mass) {
 
         //}
@@ -126,7 +131,7 @@
                 this.mass += other.mass;
                 other.active = false;
                 activeBodies -= 1;
-                this.density++;
+                this.density = (this.density + other.density)/2;
                 
                 //let number = Math.round(Math.random()*3);
                 let number = 0;
@@ -195,7 +200,7 @@
 
                 ctx.strokeStyle = "#000000";
                 ctx.beginPath();
-                ctx.arc(this.x + xOffset, this.y + yOffset, this.mass/this.density, 0, Math.PI * 2, true); // body
+                ctx.arc(this.x + xOffset, this.y + yOffset, (this.mass/this.density) * cameraZoom, 0, Math.PI * 2, true); // body
                 ctx.fillStyle = getMassColour(this.mass);
                 ctx.fill();
                 ctx.stroke();
@@ -217,23 +222,31 @@
 
        function camera() {
         if (upKey) {
-            yOffset += cameraMoveAmount;
+            preYOffset += cameraMoveAmount;
         }
         if (downKey) {
-            yOffset -= cameraMoveAmount;
+            preYOffset -= cameraMoveAmount;
         }
         if (leftKey) {
-            xOffset += cameraMoveAmount;
+            preXOffset += cameraMoveAmount;
         }
         if (rightKey) {
-            xOffset -= cameraMoveAmount;
+            preXOffset -= cameraMoveAmount;
         }
+        if (zoomInKey) {
+            cameraZoom = cameraZoom * (1 + cameraZoomAmount);
+        }
+        if (zoomOutKey) {
+            cameraZoom = cameraZoom * (1 - cameraZoomAmount);
+        }
+        xOffset = preXOffset * cameraZoom;
+        yOffset = preYOffset * cameraZoom;
        }
 
         function populateBodies(number) {
             for (i=0; i<number; i++) {
                 //bodyList[i] = new Body((Math.random()*100)+20);
-                bodyList[i] = new Body("Body " + i, Math.round(Math.random()*(canvas.width/2)+(canvas.width/4)), Math.round(Math.random()*(canvas.height/2)+(canvas.height/4)), (Math.random()*1000), Math.random()*360, 2 + Math.random()*3, false, 10 + Math.round(Math.random()*20), 0);
+                bodyList[i] = new Body("Body " + i, Math.round(Math.random()*(canvas.width/2)+(canvas.width/4)), Math.round(Math.random()*(canvas.height/2)+(canvas.height/4)), (Math.random()*1000), Math.random()*360, 2 + Math.random()*3, false, 15 + Math.round(Math.random()*20), 0);
             }
         }
 
@@ -394,7 +407,7 @@
 
         ctx.font = "48px serif";
         ctx.fillText(`bodies: ${bodyList.length} (active: ${activeBodies})`, 10, 50);
-        ctx.fillText(`camera offset: x: ${xOffset} y: ${yOffset})`, 10, 100);
+        ctx.fillText(`camera offset: x: ${xOffset}, y: ${yOffset}, zoom: ${cameraZoom}`, 10, 100);
 
        
     }
@@ -411,7 +424,8 @@ document.addEventListener('keydown', (event) => {
     if (event.key == "ArrowRight") rightKey = 1;
     if (event.key == "ArrowUp") upKey = 1;
     if (event.key == "ArrowDown") downKey = 1;
-
+    if (event.key == "A") zoomInKey = 1;
+    if (event.key == " ") zoomOutKey = 1;
 });
 document.addEventListener('keyup', (event) => {
     //key up
@@ -419,7 +433,8 @@ document.addEventListener('keyup', (event) => {
     if (event.key == "ArrowRight") rightKey = 0;
     if (event.key == "ArrowUp") upKey = 0;
     if (event.key == "ArrowDown") downKey = 0;
-    
+    if (event.key == "A") zoomInKey = 0;
+    if (event.key == " ") zoomOutKey = 0;
 });
     </script>
 </body>
