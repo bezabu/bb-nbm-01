@@ -21,7 +21,7 @@
             y: canvas.height/2,
             mass: 100000
         }
-        var bodies = 7;
+        var bodies = 4;
         var activeBodies = 7;
         let bodyList = [];
         let density = 20;
@@ -75,13 +75,14 @@
                 //
                 let massRatio = this.mass / (this.mass + other.mass);
                 //get vector points
-                let d1x = this.x + lengthDirX(this.velocity, this.direction);
-                let d1y = this.y + lengthDirY(this.velocity, this.direction);
-                let d2x = other.x + lengthDirX(other.velocity, other.direction);
-                let d2y = other.y + lengthDirY(other.velocity, other.direction);
+                let d1x = lengthDirX(this.velocity, this.direction);
+                let d1y = lengthDirY(this.velocity, this.direction);
+                let d2x = lengthDirX(other.velocity, other.direction);
+                let d2y = lengthDirY(other.velocity, other.direction);
                 //get distance between vector points
                 let d3 = getDistance(d1x, d1y, d2x, d2y);
                 console.log(`Collision magnitude ${d3} ${this.name} and ${other.name}`);
+
 
                 //get distance between bodies
                 let d4 = getDistance(this.x, this.y ,other.x ,other.y);
@@ -91,13 +92,18 @@
                 let d6x = this.x + lengthDirX(d4/2, d5);
                 let d6y = this.y + lengthDirY(d4/2, d5);
 
+
+                let d8x = ((d1x*this.mass) + (d2x*other.mass))/(2 + this.mass + other.mass);
+                let d8y = ((d1y*this.mass) + (d2y*other.mass))/(2 + this.mass + other.mass);
+
+                /*
                 //find midpoint of vectors
                 //get direction from this vector point to other vector point
                 let d7 = getDirectionDeg(d1x, d1y, d2x, d2y);
                 //find midpoint adjusted for mass
                 let d8x = d1x + lengthDirX(d3 * massRatio, d7);
                 let d8y = d1y + lengthDirY(d3 * massRatio, d7);
-                
+                */
 
                 //direction from bodies midpoint to vectors midpoint
                 let d9 = getDirectionDeg(d6x, d6y, d8x, d8y);
@@ -186,6 +192,8 @@
                 ctx.strokeStyle = "#000000";
                 ctx.beginPath();
                 ctx.arc(this.x + xOffset, this.y + yOffset, this.mass/this.density, 0, Math.PI * 2, true); // body
+                ctx.fillStyle = getMassColour(this.mass);
+                ctx.fill();
                 ctx.stroke();
 
                 ctx.moveTo(this.x + xOffset, this.y + yOffset);
@@ -193,9 +201,9 @@
                 ctx.stroke();
 
                 ctx.font = "20px serif";
-                ctx.fillText(`name: ${this.name}`, this.x + 15 + xOffset, this.y + 25 + yOffset);
-                ctx.fillText(`mass: ${this.mass}`, this.x + 15 + xOffset, this.y + 45 + yOffset);
-                ctx.fillText(`density: ${this.density}`, this.x + 15 + xOffset, this.y + 65 + yOffset);
+                ctx.fillText(`name: ${this.name}`, this.x + 15 + (this.mass/this.density) + xOffset, this.y + 25 + yOffset);
+                ctx.fillText(`mass: ${this.mass}`, this.x + 15 + (this.mass/this.density) + xOffset, this.y + 45 + yOffset);
+                ctx.fillText(`density: ${this.density}`, this.x +  + (this.mass/this.density) + xOffset, this.y + 65 + yOffset);
                 //console.log(`Draw body with mass ${this.mass} at x: ${this.x}, y: ${this.y}`)
                 //console.log(this.name);
                 //ctx.fillRect(10, 10, 10 + this.mass, 10 + this.mass);
@@ -211,9 +219,41 @@
                 bodyList[i] = new Body("Body " + i, Math.round(Math.random()*(canvas.width/2)+(canvas.width/4)), Math.round(Math.random()*(canvas.height/2)+(canvas.height/4)), (Math.random()*1000), Math.random()*360, 2 + Math.random()*3, false, 10 + Math.round(Math.random()*20), 0);
             }
         }
-        
-        
 
+        function rgbToHex(r, g, b) {
+ 
+            let red = r.toString(16).padStart(2, '0'); // FF
+            let green = g.toString(16).padStart(2, '0'); // C0
+            let blue = b.toString(16).padStart(2, '0'); // CB
+
+            return '#' + red + green + blue; // #FFC0CB
+
+        }
+        
+        function getMassColour(inMass) {
+            mass = Math.round(inMass/5);
+            let r = 0;
+            let g = 0;
+            let b = 0;
+            if (mass <= 255) {
+                r = 255;
+                g = mass;
+            } else if (mass > 255 && mass <= 510) {
+                r = 255;
+                g = 255;
+                b = mass - 255;
+            } else if (mass > 510 && mass <= 610) {
+                r = 255 - (mass - 510);
+                g = 255;
+                b = 255;
+            } else if (mass > 610) {
+                r = 155;
+                g = 255;
+                b = 255;
+            }
+            //console.log(rgbToHex(r,g,b));
+        return rgbToHex(r,g,b);
+        }
 
 
         function gameLoop() {
