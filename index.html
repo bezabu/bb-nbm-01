@@ -21,8 +21,10 @@
             y: canvas.height/2,
             mass: 100000
         }
-        const bodies = 2;
+        var bodies = 7;
+        var activeBodies = 7;
         let bodyList = [];
+        let density = 20;
 
         //function Body(mass) {
 
@@ -30,13 +32,16 @@
 
 
         class Body {
-            constructor(name, x, y, mass, direction, velocity) {
+            constructor(name, x, y, mass, direction, velocity, active, density, timer) {
                 this.name = name;
                 this.x = x;
                 this.y = y;
                 this.mass = mass;
                 this.direction = direction;
                 this.velocity = velocity;
+                this.active = true;
+                this.density = density;
+                this.timer = timer;
             /*
             this.name = 'Body';
             this.x = Math.round(Math.random()*canvas.width);
@@ -51,111 +56,162 @@
             return this;
             }
             //ctx = ctx;
-            
+            destroy() {
+                //
+                console.log(`Destroying ${this.name}`)
+                bodyList = bodyList.filter((bodyItem) => bodyItem.name != this.name);
+                bodies -= 1;
+            }
+
+            step() {
+                if (this.timer > 0) {
+                    this.timer--;
+                    if (this.timer < 0) {
+                        this.active = true;
+                    }
+                }
+            }
+            collision(other) {
+                //
+                let massRatio = this.mass / (this.mass + other.mass);
+                //get vector points
+                let d1x = this.x + lengthDirX(this.velocity, this.direction);
+                let d1y = this.y + lengthDirY(this.velocity, this.direction);
+                let d2x = other.x + lengthDirX(other.velocity, other.direction);
+                let d2y = other.y + lengthDirY(other.velocity, other.direction);
+                //get distance between vector points
+                let d3 = getDistance(d1x, d1y, d2x, d2y);
+                console.log(`Collision magnitude ${d3} ${this.name} and ${other.name}`);
+
+                //get distance between bodies
+                let d4 = getDistance(this.x, this.y ,other.x ,other.y);
+                //get direction from this to other
+                let d5 = getDirectionDeg(this.x, this.y ,other.x ,other.y);
+                //find midpoint of bodies
+                let d6x = this.x + lengthDirX(d4/2, d5);
+                let d6y = this.y + lengthDirY(d4/2, d5);
+
+                //find midpoint of vectors
+                //get direction from this vector point to other vector point
+                let d7 = getDirectionDeg(d1x, d1y, d2x, d2y);
+                //find midpoint adjusted for mass
+                let d8x = d1x + lengthDirX(d3 * massRatio, d7);
+                let d8y = d1y + lengthDirY(d3 * massRatio, d7);
+                
+
+                //direction from bodies midpoint to vectors midpoint
+                let d9 = getDirectionDeg(d6x, d6y, d8x, d8y);
+
+                //distance from bodies midpoint to vectors midpoint
+                let d10 = getDistance(d6x, d6y, d8x, d8y);
+
+                //average direction
+                let d11 = (this.direction + other.direction)/2;
+
+                //move remaining body to midpoint
+                this.x = d6x;
+                this.y = d6y;
+                this.velocity = d10;
+                this.direction = d11;
+                this.mass += other.mass;
+                other.active = false;
+                activeBodies -= 1;
+                this.density++;
+                
+                //let number = Math.round(Math.random()*3);
+                let number = 0;
+                for (i=bodies; i<bodies + number; i++) {
+                    //bodyList[i] = new Body((Math.random()*100)+20);
+                    bodyList[i] = new Body("Body " + i, d6x + lengthDirX(Math.random()*30 + (this.mass/this.density) + this.velocity, this.direction + 85 + Math.random()*10), d6y + lengthDirY(Math.random()*30 + (this.mass/this.density) + this.velocity, this.direction + 85 + Math.random()*10), (10 + Math.random()*10), Math.random()*360, 1 + Math.random()*4, true, 10 + Math.round(Math.random()*15), 60);
+                    console.log(`new body(${bodyList[i].name}) created at ${bodyList[i].x}, ${bodyList[i].y}`)
+            }
+            bodies += number;
+            activeBodies += number;
+                
+                if (d3>=9 && d3<10) {
+                    //partial ejection
+                } else if (d3>=10) {
+                    //total destruction
+                }
+            }
+
             collisionCheck() {
+                if (this.active) {
                 bodyList.map((i) => {
                     //do nothing
                     //console.log(`${this.name} vs ${i.name}`)
-                    if (i != this) {
-                        if (getDistance(this.x, this.y, i.x, i.y) < (this.mass/20) + (i.mass/20)) {
+                    if (i != this && i.active) {
+                        if (getDistance(this.x, this.y, i.x, i.y) < (this.mass/this.density) + (i.mass/i.density)) {
                             //collision
-                            console.log(`Collision! ${this.name} and ${i.name}`);
+                            //console.log(`Collision! ${this.name} and ${i.name}`);
+                            this.collision(i);
                         }
                         
                     }
                 })
             }
+            }
+
+            
 
             move() {
-                //cycle through all other bodies here
-                //for (i=0; i<bodies; i++) {
-                    //do nothing
-                //}
-                //console.log(`${this.name}`);
+                if (this.active) {
                 bodyList.map((i) => {
                     //do nothing
                     //console.log(`${this.name} vs ${i.name}`)
-                    if (i != this) {
+                    if (i != this && i.active) {
                         //do nothing
                         //console.log(`${i.name}`)
-                        //f = calculatePull(this,i);
+                        
                         f = calculatePull2(this.x, this.y ,i.x , i.y, this.mass, i.mass);
                         d = getDirectionDeg(this.x,this.y,i.x,i.y);
                         this.vx += lengthDirX(f,d);
                         this.vy += lengthDirY(f,d);
                     }
                 })
-/*
-                
-                for (i=0; i<bodies; i++) {
-                    //
-                    if (bodyList[i] != this){
-                        console.log(`I am ${this}, ${i} is not me!`);
-                        let f = calculatePull(this,bodyList[i]);
-                        //console.log(f);
-                        let d = getDirectionDeg(this.x,this.y,bodyList[i].x,bodyList[i].y);
-                        //console.log(d);
-            
-                        this.vx += lengthDirX(f,d);
-                        this.vy += lengthDirY(f,d);
-                        //console.log(`vx: ${this.vx}, vy: ${this.vy}`)
-                    }
-                }
-                */
-                //f = calculatePull(this,sun);
-                //d = getDirectionDeg(this.x,this.y,sun.x,sun.y);
-            
-                //this.vx += lengthDirX(f,d);
-                //this.vy += lengthDirY(f,d);
+
+               
 
                 this.x += this.vx;
                 this.y += this.vy;
                 //console.log(`Body with mass: ${this.mass} moved to x: ${this.vx}, y: ${this.vy}`)
                 //console.log(this.x);
             }
+            }
 
             draw() {
-
+                if (this.active) {
                 
 
                 ctx.strokeStyle = "#000000";
                 ctx.beginPath();
-                ctx.arc(this.x + xOffset, this.y + yOffset, this.mass/20, 0, Math.PI * 2, true); // body
+                ctx.arc(this.x + xOffset, this.y + yOffset, this.mass/this.density, 0, Math.PI * 2, true); // body
                 ctx.stroke();
 
                 ctx.moveTo(this.x + xOffset, this.y + yOffset);
                 ctx.lineTo(this.x + (this.vx) + xOffset, this.y + (this.vy) + yOffset); // course
                 ctx.stroke();
 
-                ctx.font = "48px serif";
-                ctx.fillText(`mass: ${this.mass}`, this.x + 25 + xOffset, this.y + 25 + yOffset);
-                ctx.fillText(`name: ${this.name}`, this.x + 25 + xOffset, this.y + 75 + yOffset);
+                ctx.font = "20px serif";
+                ctx.fillText(`name: ${this.name}`, this.x + 15 + xOffset, this.y + 25 + yOffset);
+                ctx.fillText(`mass: ${this.mass}`, this.x + 15 + xOffset, this.y + 45 + yOffset);
+                ctx.fillText(`density: ${this.density}`, this.x + 15 + xOffset, this.y + 65 + yOffset);
                 //console.log(`Draw body with mass ${this.mass} at x: ${this.x}, y: ${this.y}`)
                 //console.log(this.name);
                 //ctx.fillRect(10, 10, 10 + this.mass, 10 + this.mass);
             }
         }
+        }
 
-        //const body = new Body();
+       
 
+        function populateBodies(number) {
+            for (i=0; i<number; i++) {
+                //bodyList[i] = new Body((Math.random()*100)+20);
+                bodyList[i] = new Body("Body " + i, Math.round(Math.random()*(canvas.width/2)+(canvas.width/4)), Math.round(Math.random()*(canvas.height/2)+(canvas.height/4)), (Math.random()*1000), Math.random()*360, 2 + Math.random()*3, false, 10 + Math.round(Math.random()*20), 0);
+            }
+        }
         
-        /*
-        const body = {
-            x: Math.random()*canvas.width,
-            y: Math.random()*canvas.height,
-            mass: 15,
-            direction: Math.random()*360,
-            velocity: Math.random()*15,
-            vx: lengthDirX(2,0),
-            vy: lengthDirY(2,0)
-        }
-*/
-
-
-        for (i=0; i<bodies; i++) {
-            //bodyList[i] = new Body((Math.random()*100)+20);
-            bodyList[i] = new Body("Body " + i, Math.round(Math.random()*(canvas.width/2)+(canvas.width/4)), Math.round(Math.random()*(canvas.height/2)+(canvas.height/4)), (Math.random()*1000), Math.random()*360, Math.random()*5);
-        }
         
 
 
@@ -164,15 +220,38 @@
 
             //move(body);
             for (i=0; i<bodies; i++) {
-                bodyList[i].move();
-                bodyList[i].collisionCheck();
+                if (bodyList[i].timer > 0) {
+                    bodyList[i].step();
+                }
+                
+            }
+            for (i=0; i<bodies; i++) {
+                if (bodyList[i].active) {
+                    bodyList[i].move();
+                }
+                
+            }
+            for (i=0; i<bodies; i++) {
+                if (bodyList[i].active) {
+                    bodyList[i].collisionCheck();
+                }
             }
             drawSun();
             ctx.strokeStyle = "#000000";
             for (i=0; i<bodies; i++) {
-                bodyList[i].draw();
+                if (bodyList[i].active) {
+                    bodyList[i].draw();
+                }
 
             }
+            /*
+            for (i=0; i<bodies; i++) {
+                if (bodyList[i].active = false) {
+                    //cleanup
+                    //bodyList[i].destroy();
+                }
+            }
+            */
             //console.log("GameLoop run")
             //gameLoop();
         }
@@ -254,25 +333,12 @@
         //ctx.stroke();
 
         ctx.font = "48px serif";
-        ctx.fillText(`bodies: ${bodyList.length}`, 10, 50);
-        ctx.fillText(`body 0 mass: ${bodyList[0].mass}`, 10, 100);
-        /*
-        ctx.fillText(`body y: ${body.y}`, 10, 100);
-        ctx.fillText(`body vector x: ${body.vx}`, 10, 150);
-        ctx.fillText(`body vector y: ${body.vy}`, 10, 200);
-        f = calculatePull(body,sun);
-        ctx.fillText(`force: ${f}`, 10, 250);
-        dis = getDistance(body.x,body.y,sun.x,sun.y);
-        ctx.fillText(`distance: ${dis}`, 10, 300);
-        dir = getDirectionDeg(body.x,body.y,sun.x,sun.y);
-        ctx.fillText(`direction to sun: ${dir}`, 10, 350);
-        */
+        ctx.fillText(`bodies: ${bodyList.length} (active: ${activeBodies})`, 10, 50);
+
+       
     }
-        //ctx.beginPath();
-        //ctx.arc(95, 50, 40, 0, 2 * Math.PI);
-        //ctx.stroke();
-
-
+       
+    populateBodies(bodies);
         setInterval(gameLoop, 16);
     </script>
 </body>
