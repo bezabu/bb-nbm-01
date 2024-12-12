@@ -32,7 +32,7 @@
         let downKey = 0;
         let zoomInKey = 0;
         let zoomOutKey = 0;
-        let cameraMoveAmount = 4;
+        let cameraMoveAmount = 6;
         let cameraZoom = 1;
         let cameraZoomAmount = 0.1;
         //function Body(mass) {
@@ -200,19 +200,20 @@
 
                 ctx.strokeStyle = "#000000";
                 ctx.beginPath();
-                ctx.arc(this.x + xOffset, this.y + yOffset, (this.mass/this.density) * cameraZoom, 0, Math.PI * 2, true); // body
+                ctx.arc((this.x + xOffset) * cameraZoom, (this.y + yOffset) * cameraZoom, (this.mass/this.density) * cameraZoom, 0, Math.PI * 2, true); // body
                 ctx.fillStyle = getMassColour(this.mass);
                 ctx.fill();
                 ctx.stroke();
 
-                ctx.moveTo(this.x + xOffset, this.y + yOffset);
-                ctx.lineTo(this.x + (this.vx) + xOffset, this.y + (this.vy) + yOffset); // course
+                ctx.strokeStyle = "#000000";
+                ctx.moveTo((this.x + xOffset) * cameraZoom, (this.y + yOffset) * cameraZoom);
+                ctx.lineTo((this.x + this.vx + xOffset) * cameraZoom, (this.y + this.vy + yOffset) * cameraZoom); // course
                 ctx.stroke();
 
                 ctx.font = "20px serif";
-                ctx.fillText(`name: ${this.name}`, this.x + 15 + (this.mass/this.density) + xOffset, this.y + 25 + yOffset);
-                ctx.fillText(`mass: ${this.mass}`, this.x + 15 + (this.mass/this.density) + xOffset, this.y + 45 + yOffset);
-                ctx.fillText(`density: ${this.density}`, this.x +  + (this.mass/this.density) + xOffset, this.y + 65 + yOffset);
+                ctx.fillText(`name: ${this.name}`, ((this.x + xOffset) * cameraZoom) + (15 * cameraZoom) + (this.mass/this.density), ((this.y + yOffset) * cameraZoom) + 25);
+                ctx.fillText(`mass: ${this.mass}`, ((this.x + xOffset) * cameraZoom) + (10 * cameraZoom) + (this.mass/this.density), ((this.y + yOffset) * cameraZoom) + 45);
+                ctx.fillText(`density: ${this.density}`, (this.x + xOffset) * cameraZoom + (this.mass/this.density), (this.y + yOffset) * cameraZoom + 65);
                 //console.log(`Draw body with mass ${this.mass} at x: ${this.x}, y: ${this.y}`)
                 //console.log(this.name);
                 //ctx.fillRect(10, 10, 10 + this.mass, 10 + this.mass);
@@ -222,16 +223,16 @@
 
        function camera() {
         if (upKey) {
-            preYOffset += cameraMoveAmount;
+            preYOffset += cameraMoveAmount + (1 - cameraZoomAmount);
         }
         if (downKey) {
-            preYOffset -= cameraMoveAmount;
+            preYOffset -= cameraMoveAmount - (1 - cameraZoomAmount);
         }
         if (leftKey) {
-            preXOffset += cameraMoveAmount;
+            preXOffset += cameraMoveAmount + (1 - cameraZoomAmount);
         }
         if (rightKey) {
-            preXOffset -= cameraMoveAmount;
+            preXOffset -= cameraMoveAmount - (1 - cameraZoomAmount);
         }
         if (zoomInKey) {
             cameraZoom = cameraZoom * (1 + cameraZoomAmount);
@@ -239,8 +240,8 @@
         if (zoomOutKey) {
             cameraZoom = cameraZoom * (1 - cameraZoomAmount);
         }
-        xOffset = preXOffset * cameraZoom;
-        yOffset = preYOffset * cameraZoom;
+        xOffset = preXOffset;
+        yOffset = preYOffset;
        }
 
         function populateBodies(number) {
