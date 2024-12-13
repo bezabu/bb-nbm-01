@@ -180,8 +180,8 @@
                         
                         f = calculatePull2(this.x, this.y ,i.x , i.y, this.mass, i.mass);
                         d = getDirectionDeg(this.x,this.y,i.x,i.y);
-                        this.vx += lengthDirX(f,d);
-                        this.vy += lengthDirY(f,d);
+                        this.vx += lengthDirX(f/this.mass,d);
+                        this.vy += lengthDirY(f/this.mass,d);
                     }
                 })
 
@@ -247,7 +247,7 @@
         function populateBodies(number) {
             for (i=0; i<number; i++) {
                 //bodyList[i] = new Body((Math.random()*100)+20);
-                bodyList[i] = new Body("Body " + i, Math.round(Math.random()*(canvas.width/2)+(canvas.width/4)), Math.round(Math.random()*(canvas.height/2)+(canvas.height/4)), (Math.random()*1000), Math.random()*360, 2 + Math.random()*3, false, 15 + Math.round(Math.random()*20), 0);
+                bodyList[i] = new Body("Body " + i, Math.round(Math.random()*(canvas.width/2)+(canvas.width/4)), Math.round(Math.random()*(canvas.height/2)+(canvas.height/4)), (Math.random()*500), Math.random()*360, 1 + Math.random()*2, false, 25 + Math.round(Math.random()*20), 0);
             }
         }
 
@@ -351,8 +351,8 @@
             //calculate vector
             d=getDistance(ax,ay,bx,by);
             //G = 2.2 * 10^-5;
-            G = 0.000022;
-            //G = 9.81;
+            //G = 0.000022;
+            G = 0.0022;
             f = G * ((am * bm)/d);
             return f;
         }
