@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+        body {
+            background-color: black;
+        }
+        
+    </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
@@ -22,7 +33,7 @@
             y: canvas.height/2,
             mass: 100000
         }
-        var bodies = 4;
+        var bodies = 8;
         var activeBodies = 7;
         let bodyList = [];
         let density = 20;
@@ -34,7 +45,13 @@
         let zoomOutKey = 0;
         let cameraMoveAmount = 6;
         let cameraZoom = 1;
-        let cameraZoomAmount = 0.1;
+        let cameraZoomAmount = 0.01;
+        let drawTrails = 0;
+        let drawTailsToggle = 0;
+        let listen = 1;
+        let drawInfo = 1;
+        let drawInfoToggle = 0;
+        let infoListen = 1;
         //function Body(mass) {
 
         //}
@@ -51,6 +68,7 @@
                 this.active = true;
                 this.density = density;
                 this.timer = timer;
+                this.trail = [];
             /*
             this.name = 'Body';
             this.x = Math.round(Math.random()*canvas.width);
@@ -84,10 +102,10 @@
                 //
                 let massRatio = this.mass / (this.mass + other.mass);
                 //get vector points
-                let d1x = lengthDirX(this.velocity, this.direction);
-                let d1y = lengthDirY(this.velocity, this.direction);
-                let d2x = lengthDirX(other.velocity, other.direction);
-                let d2y = lengthDirY(other.velocity, other.direction);
+                let d1x = lengthDirX(this.velocity * this.mass, this.direction)/this.mass;
+                let d1y = lengthDirY(this.velocity * this.mass, this.direction)/this.mass;
+                let d2x = lengthDirX(other.velocity * other.mass, other.direction)/other.mass;
+                let d2y = lengthDirY(other.velocity * other.mass, other.direction)/other.mass;
                 //get distance between vector points
                 let d3 = getDistance(d1x, d1y, d2x, d2y);
                 console.log(`Collision magnitude ${d3} ${this.name} and ${other.name}`);
@@ -132,7 +150,10 @@
                 other.active = false;
                 activeBodies -= 1;
                 this.density = (this.density + other.density)/2;
-                
+
+                this.vx = 0 + lengthDirX(d10/this.mass,d11);
+                this.vy = 0 + lengthDirY(d10/this.mass,d11);
+
                 //let number = Math.round(Math.random()*3);
                 let number = 0;
                 for (i=bodies; i<bodies + number; i++) {
@@ -189,6 +210,7 @@
 
                 this.x += this.vx;
                 this.y += this.vy;
+                addTrailObject(this);
                 //console.log(`Body with mass: ${this.mass} moved to x: ${this.vx}, y: ${this.vy}`)
                 //console.log(this.x);
             }
@@ -198,18 +220,28 @@
                 if (this.active) {
                 
 
-                ctx.strokeStyle = "#000000";
+                ctx.strokeStyle = "black";
                 ctx.beginPath();
                 ctx.arc((this.x + xOffset) * cameraZoom, (this.y + yOffset) * cameraZoom, (this.mass/this.density) * cameraZoom, 0, Math.PI * 2, true); // body
                 ctx.fillStyle = getMassColour(this.mass);
                 ctx.fill();
                 ctx.stroke();
 
-                ctx.strokeStyle = "#000000";
-                ctx.moveTo((this.x + xOffset) * cameraZoom, (this.y + yOffset) * cameraZoom);
-                ctx.lineTo((this.x + this.vx + xOffset) * cameraZoom, (this.y + this.vy + yOffset) * cameraZoom); // course
-                ctx.stroke();
+                //ctx.strokeStyle = rgbToHex(200,200,200);
+                //ctx.moveTo((this.x + xOffset) * cameraZoom, (this.y + yOffset) * cameraZoom);
+                //ctx.lineTo((this.x + this.vx + xOffset) * cameraZoom, (this.y + this.vy + yOffset) * cameraZoom); // course
+                //ctx.stroke();
 
+                //draw trail
+                if (drawTrails){
+                ctx.strokeStyle = "white";
+                ctx.moveTo((this.trail[0].x + xOffset) * cameraZoom, (this.trail[0].y + yOffset) * cameraZoom);
+                this.trail.map((i) => {
+                    ctx.lineTo((i.x + xOffset) * cameraZoom, (i.y + yOffset) * cameraZoom)
+                })
+                ctx.stroke();
+            }
+            if (drawInfo){
                 ctx.font = "20px serif";
                 ctx.fillText(`name: ${this.name}`, ((this.x + xOffset) * cameraZoom) + (15 * cameraZoom) + (this.mass/this.density), ((this.y + yOffset) * cameraZoom) + 25);
                 ctx.fillText(`mass: ${this.mass}`, ((this.x + xOffset) * cameraZoom) + (10 * cameraZoom) + (this.mass/this.density), ((this.y + yOffset) * cameraZoom) + 45);
@@ -218,10 +250,17 @@
                 //console.log(this.name);
                 //ctx.fillRect(10, 10, 10 + this.mass, 10 + this.mass);
             }
+            }
         }
         }
 
-       function camera() {
+        function addTrailObject(parentObject) {
+            o = {x: parentObject.x, y: parentObject.y};
+            parentObject.trail.push(o)
+            console.log(`trail object added: ${o}`);
+        }
+
+        function camera() {
         if (upKey) {
             preYOffset += cameraMoveAmount + (1 - cameraZoomAmount);
         }
@@ -239,6 +278,22 @@
         }
         if (zoomOutKey) {
             cameraZoom = cameraZoom * (1 - cameraZoomAmount);
+        }
+        if (drawTailsToggle && listen) {
+            if (drawTrails == 1) {
+                drawTrails = 0;
+            } else if (drawTrails == 0) {
+                drawTrails = 1;
+            }
+            listen = 0;
+        }
+        if (drawInfoToggle && infoListen) {
+            if (drawInfo == 1) {
+                drawInfo = 0;
+            } else if (drawInfo == 0) {
+                drawInfo = 1;
+            }
+            infoListen = 0;
         }
         xOffset = preXOffset;
         yOffset = preYOffset;
@@ -408,7 +463,7 @@
 
         ctx.font = "48px serif";
         ctx.fillText(`bodies: ${bodyList.length} (active: ${activeBodies})`, 10, 50);
-        ctx.fillText(`camera offset: x: ${xOffset}, y: ${yOffset}, zoom: ${cameraZoom}`, 10, 100);
+        ctx.fillText(`camera offset: x: ${Math.round(xOffset)}, y: ${Math.round(yOffset)}, zoom: ${Math.round(cameraZoom * 100)/100}, trails: ${drawTrails}`, 10, 100);
 
        
     }
@@ -425,8 +480,10 @@ document.addEventListener('keydown', (event) => {
     if (event.key == "ArrowRight") rightKey = 1;
     if (event.key == "ArrowUp") upKey = 1;
     if (event.key == "ArrowDown") downKey = 1;
-    if (event.key == "A") zoomInKey = 1;
-    if (event.key == " ") zoomOutKey = 1;
+    if (event.key == "w") zoomInKey = 1;
+    if (event.key == "s") zoomOutKey = 1;
+    if (event.key == "t") drawTailsToggle = 1;
+    if (event.key == "i") drawInfoToggle = 1;
 });
 document.addEventListener('keyup', (event) => {
     //key up
@@ -434,8 +491,16 @@ document.addEventListener('keyup', (event) => {
     if (event.key == "ArrowRight") rightKey = 0;
     if (event.key == "ArrowUp") upKey = 0;
     if (event.key == "ArrowDown") downKey = 0;
-    if (event.key == "A") zoomInKey = 0;
-    if (event.key == " ") zoomOutKey = 0;
+    if (event.key == "w") zoomInKey = 0;
+    if (event.key == "s") zoomOutKey = 0;
+    if (event.key == "t") {
+        drawTailsToggle = 0;
+        listen = 1;
+    }
+    if (event.key == "i") {
+        drawInfoToggle = 0;
+        infoListen = 1;
+    }
 });
     </script>
 </body>
