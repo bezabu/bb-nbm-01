@@ -33,8 +33,13 @@
             y: canvas.height/2,
             mass: 100000
         }
-        var bodies = 8;
-        var activeBodies = 7;
+
+
+        let G = 0.000022;
+
+
+        var bodies = 2;
+        var activeBodies = 2;
         let bodyList = [];
         let density = 20;
         let leftKey = 0;
@@ -52,6 +57,8 @@
         let drawInfo = 1;
         let drawInfoToggle = 0;
         let infoListen = 1;
+        let getOrbitToggle = 0;
+        let orbitListen = 1;
         //function Body(mass) {
 
         //}
@@ -246,6 +253,7 @@
                 ctx.fillText(`name: ${this.name}`, ((this.x + xOffset) * cameraZoom) + (15 * cameraZoom) + (this.mass/this.density), ((this.y + yOffset) * cameraZoom) + 25);
                 ctx.fillText(`mass: ${this.mass}`, ((this.x + xOffset) * cameraZoom) + (10 * cameraZoom) + (this.mass/this.density), ((this.y + yOffset) * cameraZoom) + 45);
                 ctx.fillText(`density: ${this.density}`, (this.x + xOffset) * cameraZoom + (this.mass/this.density), (this.y + yOffset) * cameraZoom + 65);
+                ctx.fillText(`velocity: ${this.velocity}`, (this.x + xOffset) * cameraZoom + (this.mass/this.density), (this.y + yOffset) * cameraZoom + 85);
                 //console.log(`Draw body with mass ${this.mass} at x: ${this.x}, y: ${this.y}`)
                 //console.log(this.name);
                 //ctx.fillRect(10, 10, 10 + this.mass, 10 + this.mass);
@@ -257,7 +265,7 @@
         function addTrailObject(parentObject) {
             o = {x: parentObject.x, y: parentObject.y};
             parentObject.trail.push(o)
-            console.log(`trail object added: ${o}`);
+            //console.log(`trail object added: ${o}`);
         }
 
         function camera() {
@@ -295,6 +303,10 @@
             }
             infoListen = 0;
         }
+        if (getOrbitToggle && orbitListen) {
+            getOrbital(bodyList[1],bodyList[0]);
+            orbitListen = 0;
+        }
         xOffset = preXOffset;
         yOffset = preYOffset;
        }
@@ -304,6 +316,31 @@
                 //bodyList[i] = new Body((Math.random()*100)+20);
                 bodyList[i] = new Body("Body " + i, Math.round(Math.random()*(canvas.width/2)+(canvas.width/4)), Math.round(Math.random()*(canvas.height/2)+(canvas.height/4)), (Math.random()*500), Math.random()*360, 1 + Math.random()*2, false, 25 + Math.round(Math.random()*20), 0);
             }
+        }
+
+        function populateSystem() {
+            //star
+            //name, x, y, mass, direction, velocity, active, density, timer
+            bodyList[0] = new Body("Body 0", Math.round((canvas.width/2)), Math.round((canvas.height/2)), 2500, -90, 0.0094, false, 50, 0);
+
+            //bodyList[1] = new Body("Body 1", Math.round((canvas.width/2)) + 200, Math.round((canvas.height/2)), 10, 90, 2.35, false, 5, 0);
+            bodyList[1] = new Body("Body 1", Math.round((canvas.width/2)) + 200, Math.round((canvas.height/2)), 10, 90, 2.35, false, 5, 0);
+            bodies = 2;
+        }
+
+        function getOrbital(body1,body2) {
+            semiMajorAxis = getDistance(body1.x,body1.y,body2.x,body2.y);
+            standardGravParam = G * (body2.mass + body1.mass);
+            orbitalPeriod = 2 * Math.PI * Math.sqrt(Math.pow(semiMajorAxis,3)/standardGravParam);
+
+            //console.log(`semi major axis(a):${semiMajorAxis}, orbital period(T): ${orbitalPeriod}`);
+            //E (Eccentric Anomaly) = Cos-1 (-1 * (r/a-1) * (1/e))
+            //Cos-1 ((a * (1-e2 )-r)/(r * e))
+            //Where a is semi-major axis, e is eccentricity, r is radius from body center. 
+            
+            trueAnomaly = Math.acos( (semiMajorAxis * (1-1.002 )-semiMajorAxis)/(semiMajorAxis * 1.001) );
+            console.log(trueAnomaly);
+
         }
 
         function rgbToHex(r, g, b) {
@@ -345,7 +382,7 @@
         function gameLoop() {
 
             camera();
-
+            //getOrbital(bodyList[1],bodyList[0]);
             //move(body);
             for (i=0; i<bodies; i++) {
                 if (bodyList[i].timer > 0) {
@@ -395,7 +432,7 @@
             //calculate vector
             d=getDistance(a.x,a.y,b.x,b.y);
             //G = 2.2 * 10^-5;
-            G = 0.000022;
+            //G = 0.000022;
             //G = 9.81;
             f = G * ((a.mass * b.mass)/d);
             return f;
@@ -464,11 +501,13 @@
         ctx.font = "48px serif";
         ctx.fillText(`bodies: ${bodyList.length} (active: ${activeBodies})`, 10, 50);
         ctx.fillText(`camera offset: x: ${Math.round(xOffset)}, y: ${Math.round(yOffset)}, zoom: ${Math.round(cameraZoom * 100)/100}, trails: ${drawTrails}`, 10, 100);
-
+        getOrbital(bodyList[1],bodyList[0]);
+        ctx.fillText(`orbital period(T): ${Math.round(orbitalPeriod)}, semi major axis(a): ${Math.round(semiMajorAxis * 10) / 10}, true anomaly(θ): ${trueAnomaly}`, 10, 150);
        
     }
        
-    populateBodies(bodies);
+    //populateBodies(bodies);
+    populateSystem();
         setInterval(gameLoop, 16);
 
 
@@ -484,6 +523,7 @@ document.addEventListener('keydown', (event) => {
     if (event.key == "s") zoomOutKey = 1;
     if (event.key == "t") drawTailsToggle = 1;
     if (event.key == "i") drawInfoToggle = 1;
+    if (event.key == "o") getOrbitToggle = 1;
 });
 document.addEventListener('keyup', (event) => {
     //key up
@@ -500,6 +540,10 @@ document.addEventListener('keyup', (event) => {
     if (event.key == "i") {
         drawInfoToggle = 0;
         infoListen = 1;
+    }
+    if (event.key == "o") {
+        getOrbitToggle = 0;
+        orbitListen = 1;
     }
 });
     </script>
