@@ -34,12 +34,20 @@
             mass: 100000
         }
 
+        //simulation number
 
+        let mode = 2;
         let G = 0.000022;
 
-
-        var bodies = 2;
-        var activeBodies = 2;
+        if (mode == 1){
+            var bodies = 7;
+            var activeBodies = 7;
+        }
+        if (mode == 2){
+            var bodies = 2;
+            var activeBodies = 2;
+        }
+        
         let bodyList = [];
         let density = 20;
         let leftKey = 0;
@@ -507,7 +515,12 @@
     }
        
     //populateBodies(bodies);
-    populateSystem();
+    if (mode == 1) {
+        populateBodies(bodies);
+    }
+    if (mode == 2) {
+        populateSystem();
+    }
         setInterval(gameLoop, 16);
 
 
